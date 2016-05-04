@@ -1,0 +1,73 @@
+import sys
+import re
+import cPickle as pickle
+"""
+
+Keys: 
+* for each tweet, find url
+* expand url
+
+Checker: make sure you get same number of tweets as number of keys in pickle.
+
+""" 
+
+def get_links(path_to_pickle):
+    """
+    Opens the pickled dictionary of tweets 
+    Input: 
+        Pickle of nested dictionary of tweets
+        * keys: _id (an int like 713487787698339840L)
+        * keys: _id, author, sentiment, time, tweet
+    Returns:
+        list of tuples [(_id, extracted_url)] 
+    """ 
+    tweets = pickle.load(open(path_to_pickle,'rb'))
+    links = [(t['_id'], extract_url(t['tweet'])) for t in tweets.itervalues()]
+
+    return links
+
+def pickle_links(in_pickle_path, out_pickle_path):
+    """
+    Opens the pickled dictionary of tweets 
+    Input: 
+        Pickle of nested dictionary of tweets
+        * keys: _id (an int like 713487787698339840L)
+        * keys: _id, author, sentiment, time, tweet
+    Returns:
+        list of tuples [(_id, extracted_url)] 
+    """ 
+    tweets = pickle.load(open(path_to_pickle,'rb'))
+    links = [(t['_id'], extract_url(t['tweet'])) for t in tweets.itervalues()]
+
+    return links
+
+def extract_url(tweet):
+    try:
+        url = re.search("(?P<url>https?://[^\s]+)", tweet).group("url")
+        return url
+    except:
+        print tweet
+        return None
+
+def read():
+
+
+    """
+    Format of pickle file:
+    large dictionary with keys = _id (ex: 713487787698339840L)
+
+    {u'_id': 713487787698339840L,
+     u'author': {u'screen_name': u'fussyto'},
+     u'sentiment': u'Neutral',
+     u'time': '2016-03-25',
+     u'tweet': u'@oohpujie Bombshell: Clinton Foundation Donor\u2019s Flight From Justice Aided by Hillary Allies https://t.co/Fyhp5RR7bb \u2026'}
+    """
+    pass
+ 
+
+def main(input_file, out_putfile):
+
+
+
+
+if __name__ == "__main__": main(sys.argv)
