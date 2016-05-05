@@ -10,7 +10,7 @@ import csv
 import ast
 from utils import timeout, TimeoutError, timeit, unshorten_url
 import requests
-
+import logging
 """
 expand each url
 see that it has domain in orgs
@@ -34,20 +34,22 @@ In electome db:
  washingtonpost
 
 """
+logging.basicConfig(filename='expand_url.log',level=logging.DEBUG) 
+ 
 
 def check_substr(substring_list, string):
     return any(substring in string for substring in substring_list)
 
-@timeout(2)
-def expand(url):
-    r = requests.head(url)
-    if r.status_code / 100 == 3:
-        expanded_url = r.headers['Location']
-    else:
-        expanded_url = r.url
-    return expanded_url
+# @timeout(2)
+# def expand(url):
+#     r = requests.head(url)
+#     if r.status_code / 100 == 3:
+#         expanded_url = r.headers['Location']
+#     else:
+#         expanded_url = r.url
+#     return expanded_url
 
-def unshort_and_check(list_of_urls):
+def unshort_and_check(_id, list_of_urls):
     DOMAINS = ['reuters', 'huffingtonpost', 'mcclatchy',
                 'buzzfeed','politico', 'propublica',
                 'wsj', 'nytimes', 'npr', 'cnn', 'ap.org',
@@ -56,25 +58,16 @@ def unshort_and_check(list_of_urls):
     urls = ast.literal_eval(list_of_urls)
     ls = []
     for url in urls:
-        url_prev = ""
-
-        while url_prev != url:
-            
-            #print 'PREV', url_prev
-            #print 'THIS', url
-
-            url_prev = url
-            try:
-                url = expand(url)
-            except TimeoutError: 
-                url = url_prev
-            except:
-                print "OTHER ERROR: ", url
-                break
-
-                 
+        try:
+            unshorten_url(url)
+        except TimeoutError: 
+            logging.warning("TIMED OUT: " + _id + " " + url) 
+        except:
+            #logging.warning("OTHER ERROR: " + _id + " " + url) 
+            break    
+                  
         if check_substr(DOMAINS, url):
-            ls.append(url)
+            ls.append(url) 
 
     return ls
 
@@ -89,16 +82,17 @@ def expand_urls(inpath, outpath):
         reader = csv.reader(f)
 
         with open(outpath, 'w') as out:
-            writer = csv.writer(out)
-            for row in reader:
-                urls = unshort_and_check(row[1])
+            writer = csv.writer(out) 
+            for row in reader: 
+                urls = unshort_and_check(row[0], row[1])
                 if urls:
                     writer.writerow([row[0], urls]) 
                 
 
 
 
-def main(in_dir, out_dir):
+def main(in_dir, out_dir): 
+ 
     # split in half for Catbook and Shannon
     files = ['../DATA/LINKS_2016_ONLY/url_tweets_17_links.csv',
             '../DATA/LINKS_2016_ONLY/url_tweets_18_links.csv',

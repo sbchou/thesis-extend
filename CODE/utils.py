@@ -48,7 +48,7 @@ def check_substr(substring_list, string):
     return any(substring in string for substring in substring_list)
 
 @timeout(2)
-@timeit
+#@timeit
 def unshorten_url(url):
     parsed = urlparse.urlparse(url)
     h = httplib.HTTPConnection(parsed.netloc)
