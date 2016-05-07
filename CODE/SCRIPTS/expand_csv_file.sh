@@ -12,9 +12,7 @@ while IFS=, read id url
 #while read line
 do 
   #outfile=$(echo $url | awk 'BEGIN { FS = "/" } ; {print $NF}')
-  curl -sIL $url | grep -i ^Location | tail -n1 | cut -c 11- &
- 
-
-
+  (location=$(curl -sIL $url | grep -i ^Location | tail -n1 | cut -c 11-) 
+  echo $id","$location ) & 
 done  < "$file" 
 wait 
