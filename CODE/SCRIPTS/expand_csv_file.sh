@@ -14,5 +14,5 @@ do
   #outfile=$(echo $url | awk 'BEGIN { FS = "/" } ; {print $NF}')
   (location=$(curl -sIL $url | grep -i ^Location | tail -n1 | cut -c 11-) 
   echo $id","$location ) & 
-done  < "$file" 
+done  < "$file" > $file"_out"
 wait 
