@@ -13,9 +13,6 @@ do
   #outfile=$(echo $url | awk 'BEGIN { FS = "/" } ; {print $NF}')
   ##echo $id  $url
 
-  MYVAR="/var/cpanel/users/joebloggs:DNS9=domain.com" 
- 
-
   curl -sIL $url | grep ^Location | tail -n1 | cut -c 11- &
   #echo $id$url
   #curl $url
