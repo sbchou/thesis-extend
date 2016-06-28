@@ -5,7 +5,7 @@ library(lmerTest)
 library(MASS)
 library(AER)
 
-stories <- read.table('../DATA/FOR_CORR/clinton_w_emot.csv', header=TRUE, sep = ",", quote = "'")
+stories <- read.table('../DATA/FOR_CORR/cruz_w_emot.csv', header=TRUE, sep = ",", quote = "'")
 nrow(stories)
 head(stories)
 
