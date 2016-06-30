@@ -13,6 +13,13 @@ head(stories)
 stories <- stories[complete.cases(stories),]
 nrow(stories) 
 
+
+### DON'T FORGET TO CONVERT TO FACTORS!###
+stories$num_tweets = as.numeric((stories$num_tweets))
+stories$wc = as.numeric((stories$wc))
+stories$emotionality = as.numeric((stories$emotionality))
+stories$positivity = as.numeric((stories$positivity)) 
+
 ######## WC ###########
 ### Model as Linear-- baseline ###
 model.lm.wc <- lm(num_tweets ~ wc, stories)

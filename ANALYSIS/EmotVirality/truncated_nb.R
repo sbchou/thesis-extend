@@ -4,12 +4,13 @@ library(lme4)
 library(lmerTest)
 library(MASS)
 library(AER)
+library(VGAM)
+library(vcd)
+require(ggplot2)
 
-stories <- read.table('../DATA/FOR_CORR/clinton_w_emot.csv', header=TRUE, sep = ",", quote = "'")
-nrow(stories)
-head(stories)
-
-
+stories <- read.table('../DATA/FOR_CORR/all_fields_no_title.csv', header=TRUE, sep = ",", quote = "'")
+# remove NaN for some reason the python code breaks the CSV
+stories <- stories[complete.cases(stories),]
 
 ### DON'T FORGET TO CONVERT TO FACTORS!###
 stories$num_tweets = as.numeric((stories$num_tweets))
@@ -17,9 +18,78 @@ stories$wc = as.numeric((stories$wc))
 stories$emotionality = as.numeric((stories$emotionality))
 stories$positivity = as.numeric((stories$positivity)) 
 
-# remove NaN for some reason the python code breaks the CSV
-stories <- stories[complete.cases(stories),]
-nrow(stories) 
+#### Data Checks ####
+nrow(stories)
+# SHOULD BE 2651
+summary(stories)  
+
+###### Diagnostic Plots ######
+fit <- goodfit(stories$num_tweets) 
+summary(fit) 
+rootogram(fit)
+
+Ord_plot(stories$num_tweets)
+
+mod1 <- glm(num_tweets ~ wc, data=stories, family="poisson")
+summary(mod1)
+anova(mod1, test="Chisq")
+ 
+deviance(mod1)/mod1$df.residual
+dispersiontest(mod1)
+
+library(car)
+influencePlot(mod1)
+
+library(pscl)
+mod2 <- zeroinfl(num_tweets~wc, data=stories, dist="poisson")
+AIC(mod1, mod2)
+
+res <- residuals(mod1, type="deviance")
+plot(log(predict(mod1)), res)
+abline(h=0, lty=2)
+qqnorm(res)
+qqline(res)
+
+library(faraway)
+halfnorm(residuals(mod1))
+
+
+######## Word Count ###########
+model.wc <- vglm(num_tweets ~ wc, family=posnegbinomial(), 
+                 control=vglm.control(maxit=1000), data=stories)
+summary(model.wc)
+
+output <- data.frame(resid = resid(model.wc)[, 1], fitted = fitted(model.wc))
+ggplot(output, aes(fitted, resid)) + geom_jitter(position = position_jitter(width = 0.25), 
+                                                 alpha = 0.5) + stat_smooth(method = "loess")
+
+
+
+model.emot <- vglm(num_tweets ~ emotionality, family=posnegbinomial(), 
+                 data=stories)
+summary(model.emot)
+
+output <- data.frame(resid = resid(model.emot)[, 1], fitted = fitted(model.emot))
+ggplot(output, aes(fitted, resid)) + geom_jitter(position = position_jitter(width = 0.25), 
+                                                 alpha = 0.5) + stat_smooth(method = "loess")
+
+ggplot(output, aes(fitted, resid)) +
+  geom_jitter(position=position_jitter(width=.25), alpha=.5) +
+  stat_quantile(method="rq")
+
+output <- within(output, {
+  broken <- cut(fitted, hist(fitted, plot=FALSE)$breaks)
+})
+
+ggplot(output, aes(broken, resid)) +
+  geom_boxplot() +
+  geom_jitter(alpha=.25)
+
+
+
+ggplot(data=stories, aes(emotionality, num_tweets)) +
+  geom_boxplot() +
+  geom_jitter(alpha=.25)
 
 ######## WC ###########
 ### Model as Linear-- baseline ###

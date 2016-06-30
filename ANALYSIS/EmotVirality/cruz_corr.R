@@ -9,6 +9,13 @@ stories <- read.table('../DATA/FOR_CORR/cruz_w_emot.csv', header=TRUE, sep = ","
 nrow(stories)
 head(stories)
 
+
+### DON'T FORGET TO CONVERT TO FACTORS!###
+stories$num_tweets = as.numeric((stories$num_tweets))
+stories$wc = as.numeric((stories$wc))
+stories$emotionality = as.numeric((stories$emotionality))
+stories$positivity = as.numeric((stories$positivity)) 
+
 # remove NaN for some reason the python code breaks the CSV
 stories <- stories[complete.cases(stories),]
 nrow(stories) 
